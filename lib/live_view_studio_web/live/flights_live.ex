@@ -20,7 +20,7 @@ defmodule LiveViewStudioWeb.FlightsLive do
     ~H"""
     <h1>Find a Flight</h1>
     <div id="flights">
-      <form phx-submit="search" phx-change="suggest">
+      <form phx-change="search">
         <input
           type="text"
           name="airport"
@@ -37,10 +37,6 @@ defmodule LiveViewStudioWeb.FlightsLive do
           <img src="/images/search.svg" />
         </button>
       </form>
-
-      <div>
-        <%= inspect(@matches) %>
-      </div>
 
       <datalist id="matches">
         <option :for={{code, name} <- @matches} value={code}>
