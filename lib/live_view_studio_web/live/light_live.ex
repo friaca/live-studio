@@ -16,23 +16,33 @@ defmodule LiveViewStudioWeb.LightLive do
           <%= @brightness %>%
         </span>
       </div>
-      
+
+      <form phx-change="update-light">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          name="brightness"
+          value={@brightness}
+        />
+      </form>
+
       <button phx-click="off">
         <img src="/images/light-off.svg" />
       </button>
-      
+
       <button phx-click="down">
         <img src="/images/down.svg" />
       </button>
-      
+
       <button phx-click="random">
         <img src="/images/fire.svg" />
       </button>
-      
+
       <button phx-click="up">
         <img src="/images/up.svg" />
       </button>
-      
+
       <button phx-click="on">
         <img src="/images/light-on.svg" />
       </button>
@@ -62,6 +72,12 @@ defmodule LiveViewStudioWeb.LightLive do
 
   def handle_event("random", _payload, socket) do
     socket = update(socket, :brightness, fn _x -> :rand.uniform(100) end)
+    {:noreply, socket}
+  end
+
+  def handle_event("update-light", %{"brightness" => b}, socket) do
+    socket = assign(socket, brightness: String.to_integer(b))
+
     {:noreply, socket}
   end
 end
