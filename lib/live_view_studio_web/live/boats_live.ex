@@ -16,6 +16,14 @@ defmodule LiveViewStudioWeb.BoatsLive do
   def render(assigns) do
     ~H"""
     <h1>Daily Boat Rentals</h1>
+
+    <.promo expiration={2}>
+      Save 25% on rentals!
+      <:legal>
+        <Heroicons.exclamation_circle /> Only 3 left!
+      </:legal>
+    </.promo>
+
     <div id="boats">
       <form phx-change="filter">
         <div class="filters">
@@ -25,6 +33,7 @@ defmodule LiveViewStudioWeb.BoatsLive do
               @filter.type
             ) %>
           </select>
+          
           <div class="prices">
             <%= for price <- ["$", "$$", "$$$"] do %>
               <input
@@ -33,13 +42,13 @@ defmodule LiveViewStudioWeb.BoatsLive do
                 value={price}
                 id={price}
                 checked={price in @filter.prices}
-              />
-              <label for={price}><%= price %></label>
+              /> <label for={price}><%= price %></label>
             <% end %>
-            <input type="hidden" name="prices[]" value="" />
+             <input type="hidden" name="prices[]" value="" />
           </div>
         </div>
       </form>
+      
       <div class="boats">
         <div :for={boat <- @boats} class="boat">
           <img src={boat.image} />
@@ -47,16 +56,43 @@ defmodule LiveViewStudioWeb.BoatsLive do
             <div class="model">
               <%= boat.model %>
             </div>
+            
             <div class="details">
               <span class="price">
                 <%= boat.price %>
               </span>
+              
               <span class="type">
                 <%= boat.type %>
               </span>
             </div>
           </div>
         </div>
+      </div>
+      
+      <.promo expiration={1}>
+        Save 25% on rentals!
+        <:legal>
+          Excluding weekends
+        </:legal>
+      </.promo>
+    </div>
+    """
+  end
+
+  def promo(assigns) do
+    ~H"""
+    <div class="promo">
+      <div class="deal">
+        <%= render_slot(@inner_block) %>
+      </div>
+      
+      <div class="expiration">
+        Deal expires in <%= @expiration %> hours!
+      </div>
+      
+      <div class="legal">
+        <%= render_slot(@legal) %>
       </div>
     </div>
     """
