@@ -71,7 +71,6 @@ defmodule LiveViewStudioWeb.VehiclesLive do
 
   def handle_event("suggest", %{"query" => query}, socket) do
     matches = Vehicles.suggest(query)
-    IO.inspect(matches)
     socket = assign(socket, matches: matches)
 
     {:noreply, socket}

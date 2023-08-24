@@ -10,8 +10,17 @@ defmodule LiveViewStudioWeb.DonationsLive do
   def handle_params(params, _uri, socket) do
     sort_by = valid_sort_by(params)
     sort_order = valid_sort_order(params)
+    page = params["page"] || "1" |> String.to_integer()
+    IO.inspect(page)
+    per_page = params["per_page"] || "5" |> String.to_integer()
 
-    options = %{sort_by: sort_by, sort_order: sort_order}
+    options = %{
+      sort_by: sort_by,
+      sort_order: sort_order,
+      page: page,
+      per_page: per_page
+    }
+
     donations = Donations.list_donations(options)
 
     {:noreply, assign(socket, donations: donations, options: options)}
