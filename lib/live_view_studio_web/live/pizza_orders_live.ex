@@ -19,7 +19,6 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
 
     options = %{sort_by: sort_by, sort_order: sort_order}
     orders = PizzaOrders.list_pizza_orders(options)
-    IO.inspect(options)
 
     {:noreply, assign(socket, pizza_orders: orders, options: options)}
   end
