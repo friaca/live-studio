@@ -5,22 +5,40 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
   import Number.Currency
 
   def mount(_params, _session, socket) do
-    socket =
-      assign(socket,
-        pizza_orders: PizzaOrders.list_pizza_orders()
-      )
-
     {:ok, socket, temporary_assigns: [pizza_orders: []]}
   end
 
   def handle_params(params, _uri, socket) do
     sort_by = valid_sort_by(params)
     sort_order = valid_sort_order(params)
+    per_page = param_to_integer(params["per_page"], 10)
+    page = param_to_integer(params["page"], 1)
 
-    options = %{sort_by: sort_by, sort_order: sort_order}
+    options = %{
+      sort_by: sort_by,
+      sort_order: sort_order,
+      per_page: per_page,
+      page: page
+    }
+
     orders = PizzaOrders.list_pizza_orders(options)
+    orders_count = PizzaOrders.count_pizza_orders()
 
-    {:noreply, assign(socket, pizza_orders: orders, options: options)}
+    {:noreply,
+     assign(socket,
+       pizza_orders: orders,
+       options: options,
+       per_page: per_page,
+       page: page,
+       orders_count: orders_count
+     )}
+  end
+
+  def handle_event("select-per-page", %{"per-page" => per_page}, socket) do
+    params = %{socket.assigns.options | per_page: per_page}
+    socket = push_patch(socket, to: ~p"/pizza-orders?#{params}")
+
+    {:noreply, socket}
   end
 
   attr :sort_by, :atom, required: true
@@ -68,4 +86,27 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
   end
 
   defp sort_indicator(_, _), do: ""
+
+  defp param_to_integer(param, default) do
+    case Integer.parse(param) do
+      {number, _} -> number
+      :error -> default
+    end
+  end
+
+  defp more_pages?(options, orders_count) do
+    options.page * options.per_page < orders_count
+  end
+
+  defp pages(options, orders_count) do
+    page_count = ceil(orders_count / options.per_page)
+
+    for page_number <- (options.page - 2)..(options.page + 2),
+        page_number > 0 do
+      if page_number <= page_count do
+        current_page? = page_number == options.page
+        {page_number, current_page?}
+      end
+    end
+  end
 end
