@@ -85,19 +85,30 @@ defmodule LiveViewStudioWeb.ServersLive do
 
   def server_form(assigns) do
     ~H"""
-    <.form for={@form} phx-submit="save">
+    <.form for={@form} phx-submit="save" phx-change="validate">
       <div class="field">
-        <.input field={@form[:name]} placeholder="Name" autocomplete="off" />
+        <.input
+          field={@form[:name]}
+          placeholder="Name"
+          autocomplete="off"
+          phx-debounce="1000"
+        />
       </div>
       <div class="field">
         <.input
           field={@form[:framework]}
           placeholder="Framework"
           autocomplete="off"
+          phx-debounce="1000"
         />
       </div>
       <div class="field">
-        <.input field={@form[:size]} placeholder="Size (MB)" type="number" />
+        <.input
+          field={@form[:size]}
+          placeholder="Size (MB)"
+          type="number"
+          phx-debounce="1000"
+        />
       </div>
       <.button phx-disable-with="Saving...">
         Save
@@ -161,5 +172,18 @@ defmodule LiveViewStudioWeb.ServersLive do
 
         {:noreply, socket}
     end
+  end
+
+  def handle_event("validate", %{"server" => server_params}, socket) do
+    changeset =
+      %Server{}
+      |> Servers.change_server(server_params)
+      |> Map.put(:action, :validate)
+
+    socket =
+      socket
+      |> assign(form: to_form(changeset))
+
+    {:noreply, socket}
   end
 end
