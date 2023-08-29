@@ -10,10 +10,9 @@ defmodule LiveViewStudioWeb.VolunteersLive do
     changeset = Volunteers.change_volunteer(%Volunteer{})
 
     socket =
-      assign(socket,
-        volunteers: volunteers,
-        form: to_form(changeset)
-      )
+      socket
+      |> stream(:volunteers, volunteers)
+      |> assign(:form, to_form(changeset))
 
     {:ok, socket}
   end
@@ -39,24 +38,41 @@ defmodule LiveViewStudioWeb.VolunteersLive do
           Check-in
         </.button>
       </.form>
-      <div
-        :for={volunteer <- @volunteers}
-        class={"volunteer #{if volunteer.checked_out, do: "out"}"}
-      >
-        <div class="name">
-          <%= volunteer.name %>
-        </div>
-        <div class="phone">
-          <%= volunteer.phone %>
-        </div>
-        <div class="status">
-          <button>
-            <%= if volunteer.checked_out, do: "Check In", else: "Check Out" %>
-          </button>
+      <div id="volunteers" phx-update="stream">
+        <div
+          :for={{volunteer_id, volunteer} <- @streams.volunteers}
+          class={"volunteer #{if volunteer.checked_out, do: "out"}"}
+          id={volunteer_id}
+        >
+          <div class="name">
+            <%= volunteer.name %>
+          </div>
+          <div class="phone">
+            <%= volunteer.phone %>
+          </div>
+          <div class="status">
+            <button phx-click="toggle-status" phx-value-id={volunteer.id}>
+              <%= if volunteer.checked_out,
+                do: "Check In",
+                else: "Check Out" %>
+            </button>
+          </div>
         </div>
       </div>
     </div>
     """
+  end
+
+  def handle_event("toggle-status", %{"id" => id}, socket) do
+    volunteer = Volunteers.get_volunteer!(id)
+
+    {:ok, volunteer} = Volunteers.toggle_status_volunteer(volunteer)
+
+    socket =
+      socket
+      |> stream_insert(:volunteers, volunteer)
+
+    {:noreply, socket}
   end
 
   def handle_event("save", %{"volunteer" => volunteer_params}, socket) do
@@ -67,7 +83,7 @@ defmodule LiveViewStudioWeb.VolunteersLive do
         socket =
           socket
           |> assign(form: to_form(changeset))
-          |> update(:volunteers, fn v -> [volunteer | v] end)
+          |> stream_insert(:volunteers, volunteer, at: 0)
           |> put_flash(:info, "Volunteer successfully checked in!")
 
         {:noreply, socket}
