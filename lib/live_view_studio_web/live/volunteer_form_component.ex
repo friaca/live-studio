@@ -14,9 +14,22 @@ defmodule LiveViewStudioWeb.VolunteerFormComponent do
     {:ok, socket}
   end
 
+  def update(assigns, socket) do
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(:count, assigns.count + 1)
+
+    {:ok, socket}
+  end
+
   def render(assigns) do
     ~H"""
     <div>
+      <div class="count">
+        Go for it! You'll be volunteer #<%= @count %>
+      </div>
+      
       <.form
         for={@form}
         phx-submit="save"
