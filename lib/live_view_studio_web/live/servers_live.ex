@@ -24,7 +24,20 @@ defmodule LiveViewStudioWeb.ServersLive do
   end
 
   def handle_params(_, _uri, socket) do
-    {:noreply, assign(socket, selected_server: hd(socket.assigns.servers))}
+    case socket.assigns.live_action do
+      :new ->
+        changeset = Servers.change_server(%Server{})
+
+        socket =
+          socket
+          |> assign(:selected_server, nil)
+          |> assign(:form, to_form(changeset))
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, assign(socket, selected_server: hd(socket.assigns.servers))}
+    end
   end
 
   def render(assigns) do
@@ -33,6 +46,9 @@ defmodule LiveViewStudioWeb.ServersLive do
     <div id="servers">
       <div class="sidebar">
         <div class="nav">
+          <.link patch={~p"/servers/new"} class="add">
+            + Add New Server
+          </.link>
           <.link
             :for={server <- @servers}
             patch={~p"/servers/#{server}"}
@@ -51,8 +67,11 @@ defmodule LiveViewStudioWeb.ServersLive do
       </div>
       <div class="main">
         <div class="wrapper">
-          <.server_form form={@form}></.server_form>
-          <.server server={@selected_server} />
+          <%= if @live_action == :new do %>
+            <.server_form form={@form}></.server_form>
+          <% else %>
+            <.server server={@selected_server} />
+          <% end %>
           <div class="links">
             <.link navigate={~p"/light"}>
               Adjust lights
@@ -83,6 +102,9 @@ defmodule LiveViewStudioWeb.ServersLive do
       <.button phx-disable-with="Saving...">
         Save
       </.button>
+      <.link patch={~p"/servers"} class="cancel">
+        Cancel
+      </.link>
     </.form>
     """
   end
@@ -130,6 +152,7 @@ defmodule LiveViewStudioWeb.ServersLive do
           socket
           |> assign(:form, to_form(changeset))
           |> update(:servers, fn servers -> [server | servers] end)
+          |> push_patch(to: ~p"/servers/#{server.id}")
 
         {:noreply, socket}
 
