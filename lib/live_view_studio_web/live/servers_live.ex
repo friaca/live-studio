@@ -125,9 +125,13 @@ defmodule LiveViewStudioWeb.ServersLive do
     <div class="server">
       <div class="header">
         <h2><%= @server.name %></h2>
-        <span class={@server.status}>
+        <button
+          class={@server.status}
+          phx-click="toggle-status"
+          phx-value-id={@server.id}
+        >
           <%= @server.status %>
-        </span>
+        </button>
       </div>
       <div class="body">
         <div class="row">
@@ -148,6 +152,23 @@ defmodule LiveViewStudioWeb.ServersLive do
       </div>
     </div>
     """
+  end
+
+  def handle_event("toggle-status", %{"id" => id}, socket) do
+    server = Servers.get_server!(id)
+    {:ok, server} = Servers.toggle_status(server)
+
+    servers =
+      Enum.map(socket.assigns.servers, fn s ->
+        if s.id == server.id, do: server, else: s
+      end)
+
+    socket =
+      socket
+      |> assign(selected_server: server)
+      |> assign(servers: servers)
+
+    {:noreply, socket}
   end
 
   def handle_event("drink", _, socket) do
