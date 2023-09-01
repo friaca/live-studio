@@ -61,13 +61,12 @@ defmodule LiveViewStudioWeb.ServerFormComponent do
   def handle_event("save", %{"server" => server_params}, socket) do
     case Servers.create_server(server_params) do
       {:ok, server} ->
-        send(self(), {:server_created, server})
-
         changeset = Servers.change_server(%Server{})
 
         socket =
           socket
           |> assign(:form, to_form(changeset))
+          |> push_patch(to: ~p"/servers/#{server}")
 
         {:noreply, socket}
 

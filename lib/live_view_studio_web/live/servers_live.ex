@@ -5,13 +5,16 @@ defmodule LiveViewStudioWeb.ServersLive do
   alias LiveViewStudioWeb.ServerFormComponent
 
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Servers.subscribe()
+    end
+
     servers = Servers.list_servers()
 
     socket =
-      assign(socket,
-        servers: servers,
-        coffees: 0
-      )
+      socket
+      |> assign(:servers, servers)
+      |> assign(:coffees, 0)
 
     {:ok, socket}
   end
@@ -114,17 +117,7 @@ defmodule LiveViewStudioWeb.ServersLive do
 
   def handle_event("toggle-status", %{"id" => id}, socket) do
     server = Servers.get_server!(id)
-    {:ok, server} = Servers.toggle_status(server)
-
-    servers =
-      Enum.map(socket.assigns.servers, fn s ->
-        if s.id == server.id, do: server, else: s
-      end)
-
-    socket =
-      socket
-      |> assign(selected_server: server)
-      |> assign(servers: servers)
+    {:ok, _server} = Servers.toggle_status(server)
 
     {:noreply, socket}
   end
@@ -137,7 +130,40 @@ defmodule LiveViewStudioWeb.ServersLive do
     socket =
       socket
       |> update(:servers, fn servers -> [server | servers] end)
-      |> push_patch(to: ~p"/servers/#{server}")
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:server_updated, server}, socket) do
+    servers =
+      Enum.map(socket.assigns.servers, fn s ->
+        if s.id == server.id, do: server, else: s
+      end)
+
+    case socket.assigns.selected_server do
+      %{id: id} when id == server.id ->
+        socket =
+          socket
+          |> assign(:servers, servers)
+          |> assign(:selected_server, server)
+
+        {:noreply, socket}
+
+      _ ->
+        socket =
+          socket
+          |> assign(:servers, servers)
+
+        {:noreply, socket}
+    end
+  end
+
+  def handle_info({:server_deleted, server}, socket) do
+    servers = Enum.filter(socket.assigns.servers, &(&1.id == server.id))
+
+    socket =
+      socket
+      |> assign(:servers, servers)
 
     {:noreply, socket}
   end
