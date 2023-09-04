@@ -68,7 +68,7 @@ defmodule LiveViewStudioWeb.ServersLive do
           <%= if @live_action == :new do %>
             <.live_component module={ServerFormComponent} id={:new} />
           <% else %>
-            <.server server={@selected_server} />
+            <.server socket={@socket} server={@selected_server} />
           <% end %>
           <div class="links">
             <.link navigate={~p"/light"}>
@@ -86,6 +86,13 @@ defmodule LiveViewStudioWeb.ServersLive do
     <div class="server">
       <div class="header">
         <h2><%= @server.name %></h2>
+        <button
+          id="copy-server-url"
+          data-content={url(@socket, ~p"/servers/#{@server.id}")}
+          phx-hook="Clipboard"
+        >
+          Copy URL
+        </button>
         <button
           class={@server.status}
           phx-click="toggle-status"

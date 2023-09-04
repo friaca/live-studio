@@ -24,8 +24,9 @@ import topbar from "../vendor/topbar"
 
 import VolunteerPhone from "./hooks/volunteer-phone"
 import BookingCalendar from "./hooks/booking-calendar"
+import Clipboard from "./hooks/clipboard"
 
-const hooks = { VolunteerPhone, BookingCalendar }
+const hooks = { VolunteerPhone, BookingCalendar, Clipboard }
 
 let csrfToken =
   document.querySelector("meta[name='csrf-token']").getAttribute("content")
