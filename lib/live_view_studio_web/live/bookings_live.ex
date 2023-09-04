@@ -17,7 +17,7 @@ defmodule LiveViewStudioWeb.BookingsLive do
     <h1>Bookings</h1>
     <div id="bookings">
       <div phx-update="ignore" id="wrapper">
-        <div id="booking-calendar" phx-hook="Calendar"></div>
+        <div id="booking-calendar" phx-hook="BookingCalendar"></div>
       </div>
       <div :if={@selected_dates} class="details">
         <div>
