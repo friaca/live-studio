@@ -86,6 +86,10 @@ defmodule LiveViewStudioWeb.DonationsLive do
 
   defp sort_indicator(_, _), do: ""
 
+  defp param_to_integer(nil, default) do
+    param_to_integer("", default)
+  end
+
   defp param_to_integer(param, default) do
     case Integer.parse(param) do
       {number, _} -> number
